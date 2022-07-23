@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.figure_factory as ff
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -12,6 +13,7 @@ region_df = pd.read_csv('noc_regions.csv')
 df = preprocessor.preprocess(df, region_df)
 
 st.sidebar.title('Olympics Analysis')
+st.sidebar.image('https://nationwideradiojm.com/wp-content/uploads/2020/05/olympic-rings-1024x640.png')
 user_menu = st.sidebar.radio(
     'Select an Option',
     ('Medal Tally', 'Overall Analysis', 'Country-wise Analysis', 'Athlete wise Analysis')
@@ -122,4 +124,24 @@ if user_menu == 'Country-wise Analysis':
     fig, ax = plt.subplots(figsize=(20, 20))
     ax = sns.heatmap(pt,annot=True)
     st.pyplot(fig)
+
+
+if user_menu == 'Athlete wise Analysis':
+    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
+
+    x1 = athlete_df['Age'].dropna()
+    x2 = athlete_df[athlete_df['Medal'] == 'Gold']['Age'].dropna()
+    x3 = athlete_df[athlete_df['Medal'] == 'Silver']['Age'].dropna()
+    x4 = athlete_df[athlete_df['Medal'] == 'Bronze']['Age'].dropna()
+
+    fig = ff.create_distplot([x1, x2, x3, x4], ['Overall Age', 'Gold Medalist', 'Silver Medalist', 'Bronze Medalist'],show_hist=False, show_rug=False)
+    fig.update_layout(autosize=False,width=1000,height=600)
+    st.title('Distribution of Age')
+    st.plotly_chart(fig)
+
+    st.title('Men vs Woman')
+    final = helper.men_vs_women(df)
+    fig = px.line(final, x='Year', y=['Male', 'Female'])
+    fig.update_layout(autosize=False,width=1000,height=600)
+    st.plotly_chart(fig)
 

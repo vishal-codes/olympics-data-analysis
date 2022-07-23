@@ -29,17 +29,6 @@ def fetch_medal_tally(df, year, country):
     return x
 
 
-def medal_tally(df):
-    medal_tally = df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'])
-    medal_tally = medal_tally.groupby('region').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Gold',ascending=False).reset_index()
-    medal_tally['Gold'] = medal_tally['Gold'].astype('int')
-    medal_tally['Silver'] = medal_tally['Silver'].astype('int')
-    medal_tally['Bronze'] = medal_tally['Bronze'].astype('int')
-    medal_tally['Total'] = medal_tally['total'].astype('int')
-
-    return medal_tally
-
-
 def country_year_list(df):
     years = df['Year'].unique().tolist()
     years.sort()
@@ -93,5 +82,15 @@ def most_successful_countrywise(df, country):
         ['index', 'Name_x', 'Sport']].drop_duplicates('index')
     x.rename(columns={'index': 'Name', 'Name_x': 'Medals'}, inplace=True)
     return x
+
+
+def men_vs_women(df):
+    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
+    men = athlete_df[athlete_df['Sex'] == 'M'].groupby('Year').count()['Name'].reset_index()
+    women = athlete_df[athlete_df['Sex'] == 'F'].groupby('Year').count()['Name'].reset_index()
+    final = men.merge(women, on='Year', how='left')
+    final.rename(columns={'Name_x': 'Male', 'Name_y': 'Female'}, inplace=True)
+    final.fillna(0, inplace=True)
+    return final
 
 
