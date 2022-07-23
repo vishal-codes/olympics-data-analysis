@@ -84,7 +84,7 @@ def most_successful_countrywise(df, country):
     return x
 
 
-def men_vs_women(df):
+def gender_ratio(df):
     athlete_df = df.drop_duplicates(subset=['Name', 'region'])
     men = athlete_df[athlete_df['Sex'] == 'M'].groupby('Year').count()['Name'].reset_index()
     women = athlete_df[athlete_df['Sex'] == 'F'].groupby('Year').count()['Name'].reset_index()
@@ -92,5 +92,3 @@ def men_vs_women(df):
     final.rename(columns={'Name_x': 'Male', 'Name_y': 'Female'}, inplace=True)
     final.fillna(0, inplace=True)
     return final
-
-

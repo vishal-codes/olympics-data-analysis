@@ -12,15 +12,15 @@ region_df = pd.read_csv('noc_regions.csv')
 
 df = preprocessor.preprocess(df, region_df)
 
-st.sidebar.title('Olympics Analysis')
+st.sidebar.title('Olympics Data Analysis')
 st.sidebar.image('https://nationwideradiojm.com/wp-content/uploads/2020/05/olympic-rings-1024x640.png')
 user_menu = st.sidebar.radio(
     'Select an Option',
-    ('Medal Tally', 'Overall Analysis', 'Country-wise Analysis', 'Athlete wise Analysis')
+    ('Medal Analysis', 'Overall No. Stats', 'Country-wise Analysis', 'Athlete wise Analysis')
 )
 
-if user_menu == 'Medal Tally':
-    st.sidebar.header('Medal Tally')
+if user_menu == 'Medal Analysis':
+    st.sidebar.header('Medal Analysis')
     years, country = helper.country_year_list(df)
 
     selected_year = st.sidebar.selectbox('Select Year', years)
@@ -28,17 +28,17 @@ if user_menu == 'Medal Tally':
 
     medal_tally = helper.fetch_medal_tally(df, selected_year, selected_country)
     if selected_year == 'Overall' and selected_country == 'Overall':
-        st.title("Overall Medals analysis")
+        st.title("Overall Medal analysis")
     if selected_year != 'Overall' and selected_country == 'Overall':
-        st.title("Medals analysis of " +str(selected_year))
+        st.title("Medal analysis for olympics held in " +str(selected_year))
     if selected_year == 'Overall' and selected_country != 'Overall':
         st.title("Medals analysis of " +selected_country)
     if selected_year != 'Overall' and selected_country != 'Overall':
-        st.title("Medals analysis of " +selected_country +" during" +str(selected_year))
+        st.title("Medals analysis of " +selected_country +" during " +str(selected_year) + " olympics.")
 
     st.table(medal_tally)
 
-if user_menu == 'Overall Analysis':
+if user_menu == 'Overall No. Stats':
     editions = df['Year'].unique().shape[0] - 1
     cities = df['City'].unique().shape[0]
     sports = df['Sport'].unique().shape[0]
@@ -50,47 +50,42 @@ if user_menu == 'Overall Analysis':
     col1,col2,col3 = st.columns(3)
     with col1:
         st.header("Editions")
-        st.title(editions)
+        st.header(editions)
     with col2:
-        st.header("Hosts")
-        st.title(cities)
+        st.header("Host Cities")
+        st.header(cities)
     with col3:
         st.header("Sports")
-        st.title(sports)
+        st.header(sports)
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.header("Events")
-        st.title(events)
+        st.header(events)
     with col2:
         st.header("Nations")
-        st.title(nations)
+        st.header(nations)
     with col3:
         st.header("Athletes")
-        st.title(athletes)
+        st.header(athletes)
 
     nations_over_time = helper.data_overtime(df, 'region')
     fig = px.line(nations_over_time, x='Edition', y='region')
+    fig.update_layout(autosize=False,width=1000,height=600, yaxis_title='No. of Nations',xaxis_title='Year',)
     st.title('Participating Nations over the years')
     st.plotly_chart(fig)
 
     events_over_time = helper.data_overtime(df, 'Event')
     fig = px.line(events_over_time, x='Edition', y='Event')
+    fig.update_layout(autosize=False,width=1000,height=600, yaxis_title='No. of Events',xaxis_title='Year',)
     st.title('Events over the years')
     st.plotly_chart(fig)
 
     athletes_over_time = helper.data_overtime(df, 'Name')
     fig = px.line(athletes_over_time, x='Edition', y='Name')
-    st.title('Athletes over the years')
+    fig.update_layout(autosize=False,width=1000,height=600, yaxis_title='No. of Players',xaxis_title='Year',)
+    st.title('Players over the years')
     st.plotly_chart(fig)
-
-    st.title("Most successful Athletes")
-    sport_list = df['Sport'].unique().tolist()
-    sport_list.sort()
-    sport_list.insert(0,'Overall')
-    selected_sport = st.selectbox('Select a Sport',sport_list)
-    x = helper.most_successful(df,selected_sport)
-    st.table(x)
 
     st.title("No. of Events over time(Every Sport)")
     fig,ax = plt.subplots(figsize=(20,20))
@@ -110,6 +105,7 @@ if user_menu == 'Country-wise Analysis':
 
     country_df = helper.yearwise_medal_tally(df,selected_country)
     fig = px.line(country_df, x='Year', y='Medal')
+    fig.update_layout(autosize=False,width=1000,height=600, yaxis_title='No. of Medals',xaxis_title='Year',)
     st.header(selected_country +' Medal Tally over the years')
     st.plotly_chart(fig)
 
@@ -129,19 +125,26 @@ if user_menu == 'Country-wise Analysis':
 if user_menu == 'Athlete wise Analysis':
     athlete_df = df.drop_duplicates(subset=['Name', 'region'])
 
+    st.title("Most successful Athletes")
+    sport_list = df['Sport'].unique().tolist()
+    sport_list.sort()
+    sport_list.insert(0,'Overall')
+    selected_sport = st.selectbox('Select a Sport',sport_list)
+    x = helper.most_successful(df,selected_sport)
+    st.table(x)
+
     x1 = athlete_df['Age'].dropna()
     x2 = athlete_df[athlete_df['Medal'] == 'Gold']['Age'].dropna()
     x3 = athlete_df[athlete_df['Medal'] == 'Silver']['Age'].dropna()
     x4 = athlete_df[athlete_df['Medal'] == 'Bronze']['Age'].dropna()
 
     fig = ff.create_distplot([x1, x2, x3, x4], ['Overall Age', 'Gold Medalist', 'Silver Medalist', 'Bronze Medalist'],show_hist=False, show_rug=False)
-    fig.update_layout(autosize=False,width=1000,height=600)
+    fig.update_layout(autosize=False,width=1000,height=600, yaxis_title='Probability of winning',xaxis_title='Age',)
     st.title('Distribution of Age')
     st.plotly_chart(fig)
 
-    st.title('Men vs Woman')
-    final = helper.men_vs_women(df)
-    fig = px.line(final, x='Year', y=['Male', 'Female'])
+    st.title('Gender Ratio')
+    final = helper.gender_ratio(df)
+    fig = px.line(final, x='Year', y=['Male', 'Female'], labels={'Year': 'year', 'value': 'No. of Females or Males'})
     fig.update_layout(autosize=False,width=1000,height=600)
     st.plotly_chart(fig)
-
