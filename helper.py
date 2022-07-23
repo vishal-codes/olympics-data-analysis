@@ -31,9 +31,7 @@ def fetch_medal_tally(df, year, country):
 
 def medal_tally(df):
     medal_tally = df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'])
-    medal_tally = medal_tally.groupby('region').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Gold',
-                                                                                                ascending=False).reset_index()
-
+    medal_tally = medal_tally.groupby('region').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Gold',ascending=False).reset_index()
     medal_tally['Gold'] = medal_tally['Gold'].astype('int')
     medal_tally['Silver'] = medal_tally['Silver'].astype('int')
     medal_tally['Bronze'] = medal_tally['Bronze'].astype('int')
@@ -77,6 +75,13 @@ def yearwise_medal_tally(df, country):
     temp_df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'], inplace=True)
     new_df = temp_df[temp_df['region'] == country]
     final_df = new_df.groupby('Year').count()['Medal'].reset_index()
-
     return final_df
+
+
+def country_event_heatmap(df, country):
+    temp_df = df.dropna(subset=['Medal'])
+    temp_df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'], inplace=True)
+    new_df = temp_df[temp_df['region'] == country]
+    pt = new_df.pivot_table(index='Sport', columns='Year', values='Medal', aggfunc='count').fillna(0).astype('int')
+    return pt
 
