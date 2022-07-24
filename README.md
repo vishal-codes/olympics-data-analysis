@@ -9,3 +9,5 @@ To view more details about this dataset or it's source visit this [link](https:/
 
 1. We collected data of several athletes over the course of many years. <br>
 2. The result is a data analysis of 120 years of Olympic History.
+
+### [Deployment link](https://olympics-data-analysis2617.herokuapp.com/)
